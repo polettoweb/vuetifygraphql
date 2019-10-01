@@ -1,7 +1,7 @@
 <template>
   <v-app style="background: #e3e3ee">
     <v-navigation-drawer app temporary fixed v-model="sideNav">
-      <v-toolbar color="accent" dark flat>
+      <v-toolbar color="accent" dark flat class="pa-0">
         <v-app-bar-nav-icon @click="toggleSideNav"></v-app-bar-nav-icon>
         <router-link to="/" tag="span" style="cursor: pointer">
           <h1 class="title pl-3">Vuetify Test</h1>
@@ -22,9 +22,9 @@
     <div>
       <v-toolbar color="primary" dark>
         <v-app-bar-nav-icon @click="toggleSideNav"></v-app-bar-nav-icon>
-        <v-toolbar-title class="hidden-sm-only">
-          <router-link to="/" tag="span" style="cursor: pointer">Vuetify Test</router-link>
-        </v-toolbar-title>
+        <!-- <v-toolbar-title class="hidden-sm-only"> -->
+        <router-link to="/" tag="span" style="cursor: pointer"><v-img src="./assets/sm.svg" position="top center" width="82" height="62" aspect-ratio="1.3225" /></router-link>
+        <!-- </v-toolbar-title> -->
         <v-spacer></v-spacer>
         <v-text-field
           flex
@@ -79,12 +79,13 @@ export default {
 <style>
 .fade-enter-active,
 .fade-leave-ative {
-  transition-property: opacity;
+  transition-property: all;
   transition-duration: 0.25s;
 }
 
 .fade-enter,
 .fade-leave-active {
   opacity: 0;
+  transform: translateX(-25px)
 }
 </style>
