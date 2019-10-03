@@ -1,17 +1,3 @@
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import store from "./store";
-import vuetify from "./plugins/vuetify";
-import ApolloClient from "apollo-boost";
-import VueApollo from "vue-apollo";
-
-import FormAlert from "./components/Shared/FormAlert";
-
-// Register global component
-Vue.component("form-alert", FormAlert);
-
-Vue.use(VueApollo);
 export const defaultClient = new ApolloClient({
   uri: "http://localhost:4000/graphql",
   //include auth token
@@ -30,13 +16,13 @@ export const defaultClient = new ApolloClient({
       }
     });
   },
-  onError: ({ graphQLErrors, networkError }) => {
+  onError: ({ graphQlErrors, networkError }) => {
     if (networkError) {
       console.log("[networkError]", networkError);
     }
 
-    if (graphQLErrors) {
-      for (let err of graphQLErrors) {
+    if (graphQlErrors) {
+      for (let err of graphQlErrors) {
         console.dir(err);
         if (err.name === "AuthenticationError") {
           // set auth error in state (to show in snackbar)

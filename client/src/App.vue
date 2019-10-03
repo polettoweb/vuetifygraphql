@@ -18,7 +18,7 @@
           </v-list-item-content>
         </v-list-item>
         <!-- signout vutton -->
-        <v-list-item v-if="user">
+        <v-list-item v-if="user" @click="handleSignoutUser">
           <v-list-item-icon>
             <v-icon>exit_to_app</v-icon>
           </v-list-item-icon>
@@ -64,7 +64,7 @@
             </v-badge>
           </v-btn>
           <!-- Signout button -->
-          <v-btn text v-if="user">
+          <v-btn text v-if="user" @click="handleSignoutUser">
             <v-icon class="hidden-sm-only" left>exit_to_app</v-icon>Signout
           </v-btn>
         </v-toolbar-items>
@@ -74,6 +74,26 @@
           <transition name="fade">
             <router-view />
           </transition>
+          <!-- Auth snackbar -->
+          <v-snackbar :value="authSnackbar" color="success" :timeout="5000" bottom left>
+            <v-icon class="mr-3">check_circle</v-icon>
+            <h3>You are now signed in!</h3>
+            <v-btn dark text @click="authSnackbar = false">Close</v-btn>
+          </v-snackbar>
+
+          <!-- Auth Error snackbar -->
+          <v-snackbar
+            v-if="authError"
+            v-model="authErrorSnackbar"
+            color="info"
+            :timeout="5000"
+            bottom
+            left
+          >
+            <v-icon class="mr-3">cancel</v-icon>
+            <h3>{{authError.message}}</h3>
+            <v-btn dark text to="/signin">Signin</v-btn>
+          </v-snackbar>
         </v-container>
       </main>
     </div>
@@ -85,11 +105,26 @@ export default {
   name: "App",
   data() {
     return {
-      sideNav: false
+      sideNav: false,
+      authSnackbar: false,
+      authErrorSnackbar: false
     };
   },
+  watch: {
+    user(newValue, oldValue) {
+      //if we have no prev value for user, show snackbar
+      if (oldValue === null) {
+        this.authSnackbar = true;
+      }
+    },
+    authError(value) {
+      if (value !== null) {
+        this.authErrorSnackbar = true;
+      }
+    }
+  },
   computed: {
-    ...mapGetters(["user"]),
+    ...mapGetters(["authError", "user"]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
@@ -120,6 +155,9 @@ export default {
     }
   },
   methods: {
+    handleSignoutUser() {
+      this.$store.dispatch("signoutUser");
+    },
     toggleSideNav() {
       this.sideNav = !this.sideNav;
     }
