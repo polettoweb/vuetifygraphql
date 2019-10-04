@@ -6,7 +6,8 @@ import {
   GET_CURRENT_USER,
   GET_POSTS,
   SIGNIN_USER,
-  SIGNUP_USER
+  SIGNUP_USER,
+  ADD_POST
 } from "./queries";
 Vue.use(Vuex);
 
@@ -68,11 +69,10 @@ export default new Vuex.Store({
         console.log(err);
       }
     },
-    async signinUser({ commit }, payload) {
+    async signupUser({ commit }, payload) {
       try {
         commit("clearError");
         commit("setLoading", true);
-        localStorage.setItem("token", "");
         const response = await apolloClient.mutate({
           mutation: SIGNUP_USER,
           variables: payload
@@ -80,7 +80,7 @@ export default new Vuex.Store({
         const { data } = response;
         // console.log(data.signinUser);
         commit("setLoading", false);
-        localStorage.setItem("token", data.signinUser.token);
+        localStorage.setItem("token", data.signupUser.token);
         router.go();
       } catch (err) {
         commit("setLoading", false);
@@ -92,7 +92,6 @@ export default new Vuex.Store({
       try {
         commit("clearError");
         commit("setLoading", true);
-        localStorage.setItem("token", "");
         const response = await apolloClient.mutate({
           mutation: SIGNIN_USER,
           variables: payload
@@ -116,6 +115,38 @@ export default new Vuex.Store({
       //end session
       await apolloClient.resetStore();
       router.push("/");
+    },
+    async addPost({ commit }, payload) {
+      try {
+        const response = await apolloClient.mutate({
+          mutation: ADD_POST,
+          variables: payload,
+          update: (cache, { data: { addPost } }) => {
+            //read the query to update
+            const data = cache.readQuery({ query: GET_POSTS });
+            //create updated data
+            data.getPosts.unshift(addPost);
+            //write update data back to the query
+            cache.writeQuery({
+              query: GET_POSTS,
+              data
+            });
+          },
+          //optimistic response ensures data is added immediately as we specified for the update funmction
+          optimisticResponse: {
+            __typename: "Mutation",
+            addPost: {
+              __typename: "Post",
+              _id: -1,
+              ...payload
+            }
+          }
+        });
+        const { data } = response;
+        console.log(data.post);
+      } catch (err) {
+        console.error(err);
+      }
     }
   },
   getters: {

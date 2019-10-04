@@ -76,7 +76,7 @@
               <v-layout row pa-2 flex flex-column align-end>
                 <v-btn
                   :loading="loading"
-                  :disabled="!isFormValid"
+                  :disabled="!isFormValid || loading"
                   color="info"
                   x-large
                   type="submit"
@@ -130,8 +130,15 @@ export default {
       ]
     };
   },
+  watch: {
+    user(value) {
+      if (value) {
+        this.$router.push('/')
+      }
+    }
+  },
   computed: {
-    ...mapGetters(["error"])
+    ...mapGetters(["loading","error","user"])
   },
   methods: {
     handleSignupUser() {

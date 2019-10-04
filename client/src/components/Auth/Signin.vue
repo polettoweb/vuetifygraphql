@@ -50,7 +50,7 @@
               <v-layout row pa-2 flex flex-column align-end>
                 <v-btn
                   :loading="loading"
-                  :disabled="!isFormValid"
+                  :disabled="!isFormValid || loading"
                   color="primary"
                   x-large
                   type="submit"

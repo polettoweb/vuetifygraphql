@@ -8,7 +8,7 @@ const createToken = (user, secret, expiresIn) => {
 
 module.exports = {
   Query: {
-    getCurrentUser: async (_, args, { User, currentUser }) => {
+    async getCurrentUser(_, args, { User, currentUser }) {
       if (!currentUser) {
         return null;
       }
@@ -21,7 +21,7 @@ module.exports = {
       });
       return user;
     },
-    getPosts: async (_, args, { Post }) => {
+    async getPosts(_, args, { Post }) {
       const posts = await Post.find({})
         .sort({ createdDate: "desc" })
         .populate({
@@ -29,14 +29,51 @@ module.exports = {
           model: "User"
         });
       return posts;
+    },
+    async getPost(_, { postId }, { Post }) {
+      const post = await Post.findOne({ _id: postId }).populate({
+        path: "messages.messageUser",
+        model: "User"
+      });
+
+      return post;
+    },
+    async infiniteScrollPosts(_, { pageNum, pageSize }, { Post }) {
+      let posts;
+      if (pageNum === 1) {
+        posts = await Post.find({})
+          .sort({ createdDate: "desc" })
+          .populate({
+            path: "createdBy",
+            model: "User"
+          })
+          .limit(pageSize);
+      } else {
+        //if page number is greater than 1
+        const skips = pageSize * (pageNum - 1);
+        posts = await Post.find({})
+          .sort({ createdDate: "desc" })
+          .populate({
+            path: "createdBy",
+            model: "User"
+          })
+          .skip(skips)
+          .limit(pageSize);
+      }
+      const totalDocs = await Post.countDocuments();
+      const hasMore = totalDocs > pageSize * pageNum;
+      return {
+        posts,
+        hasMore
+      };
     }
   },
   Mutation: {
-    addPost: async (
+    async addPost(
       _,
       { title, imageUrl, categories, description, creatorId },
       { Post }
-    ) => {
+    ) {
       const newPost = await new Post({
         title,
         imageUrl,
@@ -46,7 +83,25 @@ module.exports = {
       }).save();
       return newPost;
     },
-    signinUser: async (_, { username, password }, { User }) => {
+    async addPostMessage(_, { messageBody, userId, postId }, { Post }) {
+      const newMessage = {
+        messageBody,
+        messageUser: userId
+      };
+      const post = await Post.findOneAndUpdate(
+        // find post by id
+        { _id: postId },
+        // prepend (push) new message to beginning of messages array
+        { $push: { messages: { $each: [newMessage], $position: 0 } } },
+        // return fresh document after update
+        { new: true }
+      ).populate({
+        path: "messages.messageUser",
+        model: "User"
+      });
+      return post.messages[0];
+    },
+    async signinUser(_, { username, password }, { User }) {
       const user = await User.findOne({ username });
       if (!user) {
         throw new Error("User not found");
@@ -58,7 +113,7 @@ module.exports = {
       }
       return { token: createToken(user, process.env.SECRET, "1hr") };
     },
-    signupUser: async (_, { username, email, password }, { User }) => {
+    async signupUser(_, { username, email, password }, { User }) {
       const user = await User.findOne({ username });
       if (user) {
         throw new Error("User already exists");
