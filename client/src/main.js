@@ -49,12 +49,12 @@ export const defaultClient = new ApolloClient({
   }
 });
 
-const ApolloProvider = new VueApollo({ defaultClient });
+const apolloProvider = new VueApollo({ defaultClient });
 
 Vue.config.productionTip = false;
 
 new Vue({
-  provide: ApolloProvider.provide(),
+  apolloProvider,
   router,
   store,
   vuetify,

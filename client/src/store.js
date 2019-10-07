@@ -7,13 +7,17 @@ import {
   GET_POSTS,
   SIGNIN_USER,
   SIGNUP_USER,
-  ADD_POST
+  ADD_POST,
+  SEARCH_POSTS,
+  GET_USER_POSTS
 } from "./queries";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     posts: [],
+    userPosts: [],
+    searchResults: [],
     user: null,
     loading: false,
     error: null,
@@ -26,8 +30,16 @@ export default new Vuex.Store({
     setUser(state, payload) {
       state.user = payload;
     },
+    setUserPosts(state, payload) {
+      state.userPosts = payload;
+    },
     setLoading(state, payload) {
       state.loading = payload;
+    },
+    setSearchResults(state, payload) {
+      if (payload !== null) {
+        state.searchResults = payload;
+      }
     },
     setError(state, payload) {
       state.error = payload;
@@ -36,7 +48,8 @@ export default new Vuex.Store({
       state.authError = payload;
     },
     clearUser: state => (state.user = null),
-    clearError: state => (state.error = null)
+    clearError: state => (state.error = null),
+    clearSearchResults: state => (state.searchResults = [])
   },
   actions: {
     async getCurrentUser({ commit }) {
@@ -49,7 +62,6 @@ export default new Vuex.Store({
         commit("setLoading", false);
         //add user data to state
         commit("setUser", data.getCurrentUser);
-        console.log(data.getCurrentUser);
       } catch (err) {
         commit("setLoading", false);
         console.error(err);
@@ -67,6 +79,31 @@ export default new Vuex.Store({
       } catch (err) {
         commit("setLoading", false);
         console.log(err);
+      }
+    },
+    async getUserPosts({ commit }, payload) {
+      try {
+        const response = await apolloClient.query({
+          query: GET_USER_POSTS,
+          variables: payload
+        });
+
+        const { data } = response;
+        commit("setUserPosts", data.getUserPosts);
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    async searchPosts({ commit }, payload) {
+      try {
+        const response = await apolloClient.query({
+          query: SEARCH_POSTS,
+          variables: payload
+        });
+        const { data } = response;
+        commit("setSearchResults", data.searchPosts);
+      } catch (err) {
+        console.error(err);
       }
     },
     async signupUser({ commit }, payload) {
@@ -151,9 +188,12 @@ export default new Vuex.Store({
   },
   getters: {
     posts: state => state.posts,
+    userPosts: state => state.userPosts,
     loading: state => state.loading,
+    searchResults: state => state.searchResults,
     user: state => state.user,
     error: state => state.error,
-    authError: state => state.authError
+    authError: state => state.authError,
+    userFavorites: state => state.user && state.user.favorites
   }
 });

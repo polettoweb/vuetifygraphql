@@ -30,6 +30,12 @@ module.exports = {
         });
       return posts;
     },
+    async getUserPosts(_, { userId }, { Post }) {
+      const posts = await Post.find({
+        createdBy: userId
+      });
+      return posts;
+    },
     async getPost(_, { postId }, { Post }) {
       const post = await Post.findOne({ _id: postId }).populate({
         path: "messages.messageUser",
@@ -37,6 +43,23 @@ module.exports = {
       });
 
       return post;
+    },
+    async searchPosts(_, { searchTerm }, { Post }) {
+      if (searchTerm) {
+        const searchResults = await Post.find(
+          // Perform text search for search value of 'searchTerm'
+          { $text: { $search: searchTerm } },
+          // Assign 'searchTerm' a text score to provide best match
+          { score: { $meta: "textScore" } }
+          // Sort results according to that textScore (as well as by likes in descending order)
+        )
+          .sort({
+            score: { $meta: "textScore" },
+            likes: "desc"
+          })
+          .limit(5);
+        return searchResults;
+      }
     },
     async infiniteScrollPosts(_, { pageNum, pageSize }, { Post }) {
       let posts;
@@ -100,6 +123,44 @@ module.exports = {
         model: "User"
       });
       return post.messages[0];
+    },
+    async likePost(_, { postId, username }, { Post, User }) {
+      //find Post, add 1 to its like value
+      const post = await Post.findOneAndUpdate(
+        { _id: postId },
+        { $inc: { likes: 1 } },
+        { new: true }
+      );
+      //find user and add id of post to its favorites array and populate it
+      const user = await User.findOneAndUpdate(
+        { username },
+        { $addToSet: { favorites: postId } },
+        { new: true }
+      ).populate({
+        path: "favorites",
+        model: "Post"
+      });
+
+      return { likes: post.likes, favorites: user.favorites };
+    },
+    async unlikePost(_, { postId, username }, { Post, User }) {
+      //find Post, add -1 to its like value
+      const post = await Post.findOneAndUpdate(
+        { _id: postId },
+        { $inc: { likes: -1 } },
+        { new: true }
+      );
+      //find user and remove id of post to its favorites array and populate it
+      const user = await User.findOneAndUpdate(
+        { username },
+        { $pull: { favorites: postId } },
+        { new: true }
+      ).populate({
+        path: "favorites",
+        model: "Post"
+      });
+
+      return { likes: post.likes, favorites: user.favorites };
     },
     async signinUser(_, { username, password }, { User }) {
       const user = await User.findOne({ username });

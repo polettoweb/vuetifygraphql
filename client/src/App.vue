@@ -27,7 +27,7 @@
       </v-list>
     </v-navigation-drawer>
     <div>
-      <v-toolbar color="primary" dark>
+      <v-app-bar color="primary" dark>
         <v-app-bar-nav-icon @click="toggleSideNav"></v-app-bar-nav-icon>
         <!-- <v-toolbar-title class="hidden-sm-only"> -->
         <router-link to="/" tag="span" style="cursor: pointer">
@@ -42,6 +42,8 @@
         <!-- </v-toolbar-title> -->
         <v-spacer></v-spacer>
         <v-text-field
+          v-model="searchTerm"
+          @input="handleSearchPosts"
           flex
           prepend-icon="search"
           placeholder="Search posts"
@@ -49,6 +51,7 @@
           single-line
           hide-details
         ></v-text-field>
+
         <v-spacer></v-spacer>
         <v-toolbar-items class="hidden-xs-only">
           <v-btn text v-for="item in horizontalNavItems" :key="item.title" :to="item.link">
@@ -58,8 +61,8 @@
           <!-- Profile button -->
           <v-btn text to="/profile" v-if="user">
             <v-icon class="hidden-sm-only" left>account_box</v-icon>
-            <v-badge right color="accent" dark>
-              <!-- <span slot="badge" primary>1</span> -->
+            <v-badge right color="accent" dark :class="{'bounce': badgeAnimated}">
+              <span slot="badge" v-if="userFavorites.length" primary>{{userFavorites.length}}</span>
               Profile
             </v-badge>
           </v-btn>
@@ -68,7 +71,28 @@
             <v-icon class="hidden-sm-only" left>exit_to_app</v-icon>Signout
           </v-btn>
         </v-toolbar-items>
-      </v-toolbar>
+      </v-app-bar>
+      <!-- Search results card -->
+      <v-card dark v-if="searchTerm && searchResults.length" id="search_card">
+        <v-list>
+          <v-list-item
+            @click="gotToSearchResult(result._id)"
+            v-for="result in searchResults"
+            :key="result._id"
+          >
+            <v-list-item-title>
+              {{result.title}} -
+              <span
+                class="font-weight-thin"
+              >{{formatDescription(result.description)}}</span>
+            </v-list-item-title>
+            <!-- show icon if varoitre by user -->
+            <v-list-item-action v-if="checkIfUserFavorite(result._id)">
+              <v-icon>favorite</v-icon>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </v-card>
       <main>
         <v-container class="mt-4">
           <transition name="fade">
@@ -107,7 +131,9 @@ export default {
     return {
       sideNav: false,
       authSnackbar: false,
-      authErrorSnackbar: false
+      authErrorSnackbar: false,
+      badgeAnimated: false,
+      searchTerm: ""
     };
   },
   watch: {
@@ -121,10 +147,17 @@ export default {
       if (value !== null) {
         this.authErrorSnackbar = true;
       }
+    },
+    userFavorites(value) {
+      //if this value changes
+      if (value) {
+        this.badgeAnimated = true;
+        setTimeout(() => (this.badgeAnimated = false), 1000);
+      }
     }
   },
   computed: {
-    ...mapGetters(["authError", "user"]),
+    ...mapGetters(["authError", "user", "userFavorites", "searchResults"]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
@@ -155,8 +188,27 @@ export default {
     }
   },
   methods: {
+    handleSearchPosts() {
+      this.$store.dispatch("searchPosts", {
+        searchTerm: this.searchTerm
+      });
+    },
     handleSignoutUser() {
       this.$store.dispatch("signoutUser");
+    },
+    gotToSearchResult(resultId) {
+      this.searchTerm = "";
+      this.$router.push(`/posts/${resultId}`);
+      this.$store.commit("clearSearchResults");
+    },
+    formatDescription(desc) {
+      return desc.length > 20 ? `${desc.slice(0, 20)}...` : desc;
+    },
+    checkIfUserFavorite(resultId) {
+      return (
+        this.userFavorites &&
+        this.userFavorites.some(fave => fave._id === resultId)
+      );
     },
     toggleSideNav() {
       this.sideNav = !this.sideNav;
@@ -175,5 +227,40 @@ export default {
 .fade-leave-active {
   opacity: 0;
   transform: translateX(-25px);
+}
+
+#search_card {
+  position: absolute;
+  width: 100vw;
+  z-index: 100;
+  top: 64px;
+  left: 0;
+}
+
+.bounce {
+  animation: bounce 1s both;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  40%,
+  43% {
+    text-replace: translate3d(0, -20px, 0);
+  }
+
+  70% {
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
 }
 </style>
