@@ -106,6 +106,30 @@ module.exports = {
       }).save();
       return newPost;
     },
+    async updateUserPost(
+      _,
+      { postId, userId, title, description, imageUrl, categories },
+      { Post }
+    ) {
+      const post = await Post.findOneAndUpdate(
+        //find the post by postid and created by
+        { _id: postId, createdBy: userId },
+        {
+          $set: {
+            title,
+            imageUrl,
+            categories,
+            description
+          }
+        },
+        { new: true }
+      );
+      return post;
+    },
+    async deleteUserPost(_, { postId }, { Post }) {
+      const post = await Post.findOneAndRemove({ _id: postId });
+      return post;
+    },
     async addPostMessage(_, { messageBody, userId, postId }, { Post }) {
       const newMessage = {
         messageBody,

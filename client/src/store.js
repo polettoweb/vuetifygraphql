@@ -9,7 +9,10 @@ import {
   SIGNUP_USER,
   ADD_POST,
   SEARCH_POSTS,
-  GET_USER_POSTS
+  GET_USER_POSTS,
+  UPDATE_USER_POST,
+  DELETE_USER_POST,
+  INFINITE_SCROLL_POSTS
 } from "./queries";
 Vue.use(Vuex);
 
@@ -94,6 +97,45 @@ export default new Vuex.Store({
         console.error(err);
       }
     },
+    async updateUserPost({ state, commit }, payload) {
+      try {
+        const response = await apolloClient.mutate({
+          mutation: UPDATE_USER_POST,
+          variables: payload
+        });
+        const { data } = response;
+        const index = state.userPosts.findIndex(
+          post => post._id == data.updateUserPost._id
+        );
+        const userPosts = [
+          ...state.userPosts.slice(0, index),
+          data.updateUserPost,
+          ...state.userPosts.slice(index + 1)
+        ];
+        commit("setUserPosts", userPosts);
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    async deleteUserPost({ state, commit }, payload) {
+      try {
+        const response = await apolloClient.mutate({
+          mutation: DELETE_USER_POST,
+          variables: payload
+        });
+        const { data } = response;
+        const index = state.userPosts.findIndex(
+          post => post._id == data.deleteUserPost._id
+        );
+        const userPosts = [
+          ...state.userPosts.slice(0, index),
+          ...state.userPosts.slice(index + 1)
+        ];
+        commit("setUserPosts", userPosts);
+      } catch (err) {
+        console.error(err);
+      }
+    },
     async searchPosts({ commit }, payload) {
       try {
         const response = await apolloClient.query({
@@ -153,7 +195,7 @@ export default new Vuex.Store({
       await apolloClient.resetStore();
       router.push("/");
     },
-    async addPost({ commit }, payload) {
+    async addPost({ state, commit }, payload) {
       try {
         const response = await apolloClient.mutate({
           mutation: ADD_POST,
@@ -177,7 +219,25 @@ export default new Vuex.Store({
               _id: -1,
               ...payload
             }
-          }
+          },
+          //rerun specified queries after performing mutation in order to get fresh data
+          refetchQueries: [
+            {
+              //updating posts page
+              query: INFINITE_SCROLL_POSTS,
+              variables: {
+                pageNum: 1,
+                pageSize: 2
+              }
+            },
+            {
+              //updating pofile page
+              query: GET_USER_POSTS,
+              variables: {
+                userId: state.user._id
+              }
+            }
+          ]
         });
         const { data } = response;
         console.log(data.post);

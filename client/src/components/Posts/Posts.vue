@@ -28,7 +28,9 @@
                 </v-list-item-avatar>
                 <v-list-item-content>
                   <v-list-item-title class="text--primary">{{post.createdBy.username}}</v-list-item-title>
-                  <v-list-item-subtitle class="font-weigh-thin">Added {{ post.createdDate }}</v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    class="font-weigh-thin"
+                  >Added {{ formatCreatedDate(post.createdDate) }}</v-list-item-subtitle>
                 </v-list-item-content>
                 <v-list-item-action>
                   <v-btn icon ripple>
@@ -53,6 +55,7 @@
 </template>
 
 <script>
+import moment from "moment";
 import { INFINITE_SCROLL_POSTS } from "../../queries";
 const pageSize = 2;
 
@@ -61,7 +64,6 @@ export default {
   data() {
     return {
       pageNum: 1,
-      showMoreEnabled: true,
       showPostCreator: false
     };
   },
@@ -74,7 +76,15 @@ export default {
       }
     }
   },
+  computed: {
+    showMoreEnabled() {
+      return this.infiniteScrollPosts && this.infiniteScrollPosts.hasMore;
+    }
+  },
   methods: {
+    formatCreatedDate(date) {
+      return moment(new Date(date)).format("ll");
+    },
     showMorePosts() {
       console.log("FIRED");
       console.log(this.$apollo);
@@ -93,7 +103,6 @@ export default {
 
           const newPosts = fetchMoreResult.infiniteScrollPosts.posts;
           const hasMore = fetchMoreResult.infiniteScrollPosts.hasMore;
-          this.showMoreEnabled = hasMore;
 
           return {
             infiniteScrollPosts: {
