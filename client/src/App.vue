@@ -62,7 +62,11 @@
           <v-btn text to="/profile" v-if="user">
             <v-icon class="hidden-sm-only" left>account_box</v-icon>
             <v-badge right color="accent" dark :class="{'bounce': badgeAnimated}">
-              <span slot="badge" v-if="userFavorites.length" primary>{{userFavorites.length}}</span>
+              <span
+                slot="badge"
+                v-if="userFavorites && userFavorites.length"
+                primary
+              >{{userFavorites.length}}</span>
               Profile
             </v-badge>
           </v-btn>
