@@ -1,24 +1,32 @@
 import router from "../router";
 import { defaultClient as apolloClient } from "../main";
+
 import {
-  GET_CURRENT_USER,
+  signinUserService,
+  getCurrentUserService,
+  signupUserservice,
+  signOutUserService
+} from "../services/userService";
+
+import {
+  getPostsService,
+  getUserPostsService,
+  updateUserPostService,
+  deleteUserPostService,
+  searchPostsService
+} from "../services/postsService";
+
+import {
   GET_POSTS,
-  SIGNIN_USER,
-  SIGNUP_USER,
   ADD_POST,
-  SEARCH_POSTS,
   GET_USER_POSTS,
-  UPDATE_USER_POST,
-  DELETE_USER_POST,
   INFINITE_SCROLL_POSTS
 } from "../queries";
 
 const getCurrentUser = async ({ commit }) => {
   try {
     commit("setLoading", true);
-    const response = await apolloClient.query({
-      query: GET_CURRENT_USER
-    });
+    const response = await getCurrentUserService();
     const { data } = response;
     commit("setLoading", false);
     //add user data to state
@@ -31,9 +39,7 @@ const getCurrentUser = async ({ commit }) => {
 const getPosts = async ({ commit }) => {
   try {
     commit("setLoading", true);
-    const response = await apolloClient.query({
-      query: GET_POSTS
-    });
+    const response = await getPostsService();
     const { data } = response;
     commit("setPosts", data.getPosts);
     commit("setLoading", false);
@@ -44,10 +50,7 @@ const getPosts = async ({ commit }) => {
 };
 const getUserPosts = async ({ commit }, payload) => {
   try {
-    const response = await apolloClient.query({
-      query: GET_USER_POSTS,
-      variables: payload
-    });
+    const response = await getUserPostsService(payload);
 
     const { data } = response;
     commit("setUserPosts", data.getUserPosts);
@@ -57,10 +60,7 @@ const getUserPosts = async ({ commit }, payload) => {
 };
 const updateUserPost = async ({ state, commit }, payload) => {
   try {
-    const response = await apolloClient.mutate({
-      mutation: UPDATE_USER_POST,
-      variables: payload
-    });
+    const response = await updateUserPostService(payload);
     const { data } = response;
     const index = state.userPosts.findIndex(
       post => post._id == data.updateUserPost._id
@@ -77,10 +77,7 @@ const updateUserPost = async ({ state, commit }, payload) => {
 };
 const deleteUserPost = async ({ state, commit }, payload) => {
   try {
-    const response = await apolloClient.mutate({
-      mutation: DELETE_USER_POST,
-      variables: payload
-    });
+    const response = await deleteUserPostService(payload);
     const { data } = response;
     const index = state.userPosts.findIndex(
       post => post._id == data.deleteUserPost._id
@@ -96,10 +93,7 @@ const deleteUserPost = async ({ state, commit }, payload) => {
 };
 const searchPosts = async ({ commit }, payload) => {
   try {
-    const response = await apolloClient.query({
-      query: SEARCH_POSTS,
-      variables: payload
-    });
+    const response = await searchPostsService(payload);
     const { data } = response;
     commit("setSearchResults", data.searchPosts);
   } catch (err) {
@@ -110,10 +104,7 @@ const signupUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
     commit("setLoading", true);
-    const response = await apolloClient.mutate({
-      mutation: SIGNUP_USER,
-      variables: payload
-    });
+    const response = await signupUserservice(payload);
     const { data } = response;
     // console.log(data.signinUser);
     commit("setLoading", false);
@@ -129,10 +120,7 @@ const signinUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
     commit("setLoading", true);
-    const response = await apolloClient.mutate({
-      mutation: SIGNIN_USER,
-      variables: payload
-    });
+    const response = await signinUserService(payload);
     const { data } = response;
     // console.log(data.signinUser);
     commit("setLoading", false);
@@ -145,13 +133,17 @@ const signinUser = async ({ commit }, payload) => {
   }
 };
 const signoutUser = async ({ commit }) => {
-  //clear user in state
-  commit("clearUser");
-  //remove token in localStorage
-  localStorage.setItem("token", "");
-  //end session
-  await apolloClient.resetStore();
-  router.push("/");
+  try {
+    //clear user in state
+    commit("clearUser");
+    //remove token in localStorage
+    localStorage.setItem("token", "");
+    //end session
+    await signOutUserService();
+    router.push("/");
+  } catch (err) {
+    console.error(err);
+  }
 };
 const addPost = async ({ state, commit }, payload) => {
   try {

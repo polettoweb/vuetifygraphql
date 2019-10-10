@@ -5,7 +5,7 @@ const searchResults = state => state.searchResults;
 const user = state => state.user;
 const error = state => state.error;
 const authError = state => state.authError;
-const userFavorites = state => state.user && state.user.favorite;
+const userFavorites = state => state.user && state.user.favorites;
 
 export default {
   posts,
