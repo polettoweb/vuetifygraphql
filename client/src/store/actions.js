@@ -19,8 +19,7 @@ import {
 const getCurrentUser = async ({ commit }) => {
   try {
     commit("setLoading", true);
-    const response = await getCurrentUserService();
-    const { data } = response;
+    const { data } = await getCurrentUserService();
     commit("setLoading", false);
     //add user data to state
     commit("setUser", data.getCurrentUser);
@@ -33,8 +32,7 @@ const getCurrentUser = async ({ commit }) => {
 const getPosts = async ({ commit }) => {
   try {
     commit("setLoading", true);
-    const response = await getPostsService();
-    const { data } = response;
+    const { data } = await getPostsService();
     commit("setPosts", data.getPosts);
     commit("setLoading", false);
   } catch (err) {
@@ -45,9 +43,7 @@ const getPosts = async ({ commit }) => {
 
 const getUserPosts = async ({ commit }, payload) => {
   try {
-    const response = await getUserPostsService(payload);
-
-    const { data } = response;
+    const { data } = await getUserPostsService(payload);
     commit("setUserPosts", data.getUserPosts);
   } catch (err) {
     console.error(err);
@@ -56,8 +52,7 @@ const getUserPosts = async ({ commit }, payload) => {
 
 const updateUserPost = async ({ state, commit }, payload) => {
   try {
-    const response = await updateUserPostService(payload);
-    const { data } = response;
+    const { data } = await updateUserPostService(payload);
     const index = state.userPosts.findIndex(
       post => post._id == data.updateUserPost._id
     );
@@ -74,8 +69,7 @@ const updateUserPost = async ({ state, commit }, payload) => {
 
 const deleteUserPost = async ({ state, commit }, payload) => {
   try {
-    const response = await deleteUserPostService(payload);
-    const { data } = response;
+    const { data } = await deleteUserPostService(payload);
     const index = state.userPosts.findIndex(
       post => post._id == data.deleteUserPost._id
     );
@@ -91,8 +85,7 @@ const deleteUserPost = async ({ state, commit }, payload) => {
 
 const searchPosts = async ({ commit }, payload) => {
   try {
-    const response = await searchPostsService(payload);
-    const { data } = response;
+    const { data } = await searchPostsService(payload);
     commit("setSearchResults", data.searchPosts);
   } catch (err) {
     console.error(err);
@@ -103,9 +96,7 @@ const signupUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
     commit("setLoading", true);
-    const response = await signupUserservice(payload);
-    const { data } = response;
-    // console.log(data.signinUser);
+    const { data } = await signupUserservice(payload);
     commit("setLoading", false);
     localStorage.setItem("token", data.signupUser.token);
     router.go();
@@ -120,9 +111,7 @@ const signinUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
     commit("setLoading", true);
-    const response = await signinUserService(payload);
-    const { data } = response;
-    // console.log(data.signinUser);
+    const { data } = await signinUserService(payload);
     commit("setLoading", false);
     localStorage.setItem("token", data.signinUser.token);
     router.go();
