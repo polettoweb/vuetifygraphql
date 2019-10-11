@@ -1,5 +1,4 @@
 import router from "../router";
-import { defaultClient as apolloClient } from "../main";
 
 import {
   signinUserService,
@@ -13,15 +12,9 @@ import {
   getUserPostsService,
   updateUserPostService,
   deleteUserPostService,
-  searchPostsService
+  searchPostsService,
+  addPostService
 } from "../services/postsService";
-
-import {
-  GET_POSTS,
-  ADD_POST,
-  GET_USER_POSTS,
-  INFINITE_SCROLL_POSTS
-} from "../queries";
 
 const getCurrentUser = async ({ commit }) => {
   try {
@@ -36,6 +29,7 @@ const getCurrentUser = async ({ commit }) => {
     console.error(err);
   }
 };
+
 const getPosts = async ({ commit }) => {
   try {
     commit("setLoading", true);
@@ -48,6 +42,7 @@ const getPosts = async ({ commit }) => {
     console.log(err);
   }
 };
+
 const getUserPosts = async ({ commit }, payload) => {
   try {
     const response = await getUserPostsService(payload);
@@ -58,6 +53,7 @@ const getUserPosts = async ({ commit }, payload) => {
     console.error(err);
   }
 };
+
 const updateUserPost = async ({ state, commit }, payload) => {
   try {
     const response = await updateUserPostService(payload);
@@ -75,6 +71,7 @@ const updateUserPost = async ({ state, commit }, payload) => {
     console.error(err);
   }
 };
+
 const deleteUserPost = async ({ state, commit }, payload) => {
   try {
     const response = await deleteUserPostService(payload);
@@ -91,6 +88,7 @@ const deleteUserPost = async ({ state, commit }, payload) => {
     console.error(err);
   }
 };
+
 const searchPosts = async ({ commit }, payload) => {
   try {
     const response = await searchPostsService(payload);
@@ -100,6 +98,7 @@ const searchPosts = async ({ commit }, payload) => {
     console.error(err);
   }
 };
+
 const signupUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
@@ -116,6 +115,7 @@ const signupUser = async ({ commit }, payload) => {
     console.error(err);
   }
 };
+
 const signinUser = async ({ commit }, payload) => {
   try {
     commit("clearError");
@@ -132,6 +132,7 @@ const signinUser = async ({ commit }, payload) => {
     console.error(err);
   }
 };
+
 const signoutUser = async ({ commit }) => {
   try {
     //clear user in state
@@ -145,52 +146,10 @@ const signoutUser = async ({ commit }) => {
     console.error(err);
   }
 };
+
 const addPost = async ({ state, commit }, payload) => {
   try {
-    const response = await apolloClient.mutate({
-      mutation: ADD_POST,
-      variables: payload,
-      update: (cache, { data: { addPost } }) => {
-        //read the query to update
-        const data = cache.readQuery({ query: GET_POSTS });
-        //create updated data
-        data.getPosts.unshift(addPost);
-        //write update data back to the query
-        cache.writeQuery({
-          query: GET_POSTS,
-          data
-        });
-      },
-      //optimistic response ensures data is added immediately as we specified for the update funmction
-      optimisticResponse: {
-        __typename: "Mutation",
-        addPost: {
-          __typename: "Post",
-          _id: -1,
-          ...payload
-        }
-      },
-      //rerun specified queries after performing mutation in order to get fresh data
-      refetchQueries: [
-        {
-          //updating posts page
-          query: INFINITE_SCROLL_POSTS,
-          variables: {
-            pageNum: 1,
-            pageSize: 2
-          }
-        },
-        {
-          //updating pofile page
-          query: GET_USER_POSTS,
-          variables: {
-            userId: state.user._id
-          }
-        }
-      ]
-    });
-    const { data } = response;
-    console.log(data.post);
+    await addPostService(state, payload);
   } catch (err) {
     console.error(err);
   }
