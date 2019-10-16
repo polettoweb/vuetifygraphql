@@ -17,7 +17,7 @@ const isProd = (process.env.NODE_ENV === 'production') ? true : false
 if (isProd) {
   Sentry.init({
     dsn: process.env.VUE_APP_SENTRY,
-    integrations: [new Integrations.Vue({Vue, attachProps: true, logErrors: true})],
+    integrations: [new Integrations.Vue({Vue, attachProps: true})]
   });
 }
 
