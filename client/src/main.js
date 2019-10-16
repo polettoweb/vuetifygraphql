@@ -12,8 +12,9 @@ import FormAlert from "./components/Shared/FormAlert";
 
 // Register global component
 Vue.component("form-alert", FormAlert);
+const isProd = (process.env.NODE_ENV === 'production') ? true : false
 
-if (process.env.NODE_ENV === 'production') {
+if (isProd) {
   Sentry.init({
     dsn: process.env.VUE_APP_SENTRY,
     integrations: [new Integrations.Vue({Vue, attachProps: true, logErrors: true})],
@@ -39,17 +40,12 @@ export const defaultClient = new ApolloClient({
       }
     });
   },
-  onError: ({ graphQLErrors, networkError }) => {
-    if (networkError) {
-      console.log("[networkError]", networkError);
-    }
-
+  onError: ({ graphQLErrors }) => {
     if (graphQLErrors) {
       graphQLErrors.map(({ message }) => {
         Sentry.captureException(message);
       });
       for (let err of graphQLErrors) {
-        console.dir(err);
         if (err.name === "AuthenticationError") {
           // set auth error in state (to show in snackbar)
           store.commit("setAuthError", err);
