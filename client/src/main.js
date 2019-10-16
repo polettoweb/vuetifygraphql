@@ -42,10 +42,9 @@ export const defaultClient = new ApolloClient({
   },
   onError: ({ graphQLErrors }) => {
     if (graphQLErrors) {
-      graphQLErrors.map(({ message }) => {
-        Sentry.captureException(message);
-      });
+
       for (let err of graphQLErrors) {
+        Sentry.captureException(err);
         if (err.name === "AuthenticationError") {
           // set auth error in state (to show in snackbar)
           store.commit("setAuthError", err);
