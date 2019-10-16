@@ -1,5 +1,4 @@
 import router from "../router";
-import * as Sentry from '@sentry/browser';
 
 import {
   signinUserService,
