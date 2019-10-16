@@ -15,7 +15,7 @@ Vue.component("form-alert", FormAlert);
 
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
-    dsn: 'https://d8bddaffe00d4a5b8d07793a98c808ae@sentry.io/1781240',
+    dsn: process.env.VUE_APP_SENTRY,
     integrations: [new Integrations.Vue({Vue, attachProps: true, logErrors: true})],
   });
 }
