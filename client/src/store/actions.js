@@ -17,7 +17,7 @@ import {
   addPostService
 } from "../services/postsService";
 
-const isProd = (process.env.NODE_ENV === 'production') ? true : false
+const isDev = (process.env.NODE_ENV === 'development') ? true : false
 const getCurrentUser = async ({ commit }) => {
   try {
     commit("setLoading", true);
@@ -27,7 +27,7 @@ const getCurrentUser = async ({ commit }) => {
     commit("setUser", data.getCurrentUser);
   } catch (err) {
     commit("setLoading", false);
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -39,7 +39,7 @@ const getPosts = async ({ commit }) => {
     commit("setLoading", false);
   } catch (err) {
     commit("setLoading", false);
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
     
   }
 };
@@ -49,7 +49,7 @@ const getUserPosts = async ({ commit }, payload) => {
     const { data } = await getUserPostsService(payload);
     commit("setUserPosts", data.getUserPosts);
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -66,7 +66,7 @@ const updateUserPost = async ({ state, commit }, payload) => {
     ];
     commit("setUserPosts", userPosts);
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -82,7 +82,7 @@ const deleteUserPost = async ({ state, commit }, payload) => {
     ];
     commit("setUserPosts", userPosts);
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -91,7 +91,7 @@ const searchPosts = async ({ commit }, payload) => {
     const { data } = await searchPostsService(payload);
     commit("setSearchResults", data.searchPosts);
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -106,7 +106,7 @@ const signupUser = async ({ commit }, payload) => {
   } catch (err) {
     commit("setLoading", false);
     commit("setError", err);
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -121,7 +121,7 @@ const signinUser = async ({ commit }, payload) => {
   } catch (err) {
     commit("setLoading", false);
     commit("setError", err);
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -135,7 +135,7 @@ const signoutUser = async ({ commit }) => {
     await signOutUserService();
     router.push("/");
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
@@ -143,7 +143,7 @@ const addPost = async ({ state, commit }, payload) => {
   try {
     await addPostService(state, payload);
   } catch (err) {
-    isProd ? Sentry.captureException(err) : console.log(err);
+    isDev && console.error(err)
   }
 };
 
