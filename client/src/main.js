@@ -12,11 +12,6 @@ import FormAlert from "./components/Shared/FormAlert";
 
 // Register global component
 Vue.component("form-alert", FormAlert);
-console.log('==========================================')
-console.log(process.env.VUE_APP_SENTRY)
-console.log('-------------------------------------------')
-console.log(process.env.SENTRY)
-console.log('==========================================')
 
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
