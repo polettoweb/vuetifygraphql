@@ -1,4 +1,5 @@
 import router from "../router";
+import * as Sentry from '@sentry/browser';
 
 import {
   signinUserService,
@@ -25,7 +26,8 @@ const getCurrentUser = async ({ commit }) => {
     commit("setUser", data.getCurrentUser);
   } catch (err) {
     commit("setLoading", false);
-    console.error(err);
+    console.error(err)
+    Sentry.captureException(err)
   }
 };
 
@@ -38,6 +40,7 @@ const getPosts = async ({ commit }) => {
   } catch (err) {
     commit("setLoading", false);
     console.log(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -47,6 +50,7 @@ const getUserPosts = async ({ commit }, payload) => {
     commit("setUserPosts", data.getUserPosts);
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -64,6 +68,7 @@ const updateUserPost = async ({ state, commit }, payload) => {
     commit("setUserPosts", userPosts);
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -80,6 +85,7 @@ const deleteUserPost = async ({ state, commit }, payload) => {
     commit("setUserPosts", userPosts);
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -89,6 +95,7 @@ const searchPosts = async ({ commit }, payload) => {
     commit("setSearchResults", data.searchPosts);
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -104,6 +111,7 @@ const signupUser = async ({ commit }, payload) => {
     commit("setLoading", false);
     commit("setError", err);
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -119,6 +127,7 @@ const signinUser = async ({ commit }, payload) => {
     commit("setLoading", false);
     commit("setError", err);
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -133,6 +142,7 @@ const signoutUser = async ({ commit }) => {
     router.push("/");
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 
@@ -141,6 +151,7 @@ const addPost = async ({ state, commit }, payload) => {
     await addPostService(state, payload);
   } catch (err) {
     console.error(err);
+    Sentry.captureException(err)
   }
 };
 

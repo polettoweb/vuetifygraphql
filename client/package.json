@@ -9,6 +9,8 @@
     "now-start": "npm run serve"
   },
   "dependencies": {
+    "@sentry/browser": "^5.7.1",
+    "@sentry/integrations": "^5.7.1",
     "apollo-boost": "^0.4.4",
     "core-js": "^2.6.5",
     "graphql": "^14.5.8",
